@@ -57,7 +57,7 @@ int EPD_5in65f_test(void)
     Paint_NewImage(BlackImage, EPD_5IN65F_WIDTH, EPD_5IN65F_HEIGHT, 0, EPD_5IN65F_WHITE);
     Paint_SetScale(7);
 	
-#if 1
+#if 0
     printf("show image for array\r\n");
 
 	EPD_5IN65F_Display(flagimage);
@@ -73,45 +73,33 @@ int EPD_5in65f_test(void)
     DEV_Delay_ms(4000);
 #endif
 
-#if 0
+#if 1
     Paint_Clear(EPD_5IN65F_WHITE);
     printf("Drawing:BlackImage\r\n");
-    Paint_DrawPoint(10, 80, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DOT_STYLE_DFT);
-    Paint_DrawPoint(10, 90, EPD_5IN65F_BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
-    Paint_DrawPoint(10, 100, EPD_5IN65F_BLACK, DOT_PIXEL_3X3, DOT_STYLE_DFT);
-    Paint_DrawLine(20, 70, 70, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
-    Paint_DrawLine(70, 70, 20, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
-    Paint_DrawRectangle(20, 70, 70, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-    Paint_DrawRectangle(80, 70, 130, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    Paint_DrawCircle(45, 95, 20, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-    Paint_DrawCircle(105, 95, 20, EPD_5IN65F_WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    Paint_DrawLine(85, 95, 125, 95, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED);
-    Paint_DrawLine(105, 75, 105, 115, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED);
-    Paint_DrawString_EN(10, 0, "waveshare", &Font16, EPD_5IN65F_BLACK, EPD_5IN65F_WHITE);
-    Paint_DrawString_EN(10, 20, "hello world", &Font12, EPD_5IN65F_WHITE, EPD_5IN65F_BLACK);
-    Paint_DrawNum(10, 33, 123456789, &Font12, EPD_5IN65F_BLACK, EPD_5IN65F_WHITE);
-    Paint_DrawNum(10, 50, 987654321, &Font16, EPD_5IN65F_WHITE, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(300, 0, "你好abc", &Font12CN, EPD_5IN65F_BLACK, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(300, 20, "你好abc", &Font12CN, EPD_5IN65F_GREEN, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(300, 40, "你好abc", &Font12CN, EPD_5IN65F_BLUE, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(300, 60, "你好abc", &Font12CN, EPD_5IN65F_RED, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(300, 80, "你好abc", &Font12CN, EPD_5IN65F_YELLOW, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(300, 100, "你好abc", &Font12CN, EPD_5IN65F_ORANGE, EPD_5IN65F_WHITE);
-    Paint_DrawString_CN(150, 0, "微雪电子", &Font24CN, EPD_5IN65F_WHITE, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 40, "微雪电子", &Font24CN, EPD_5IN65F_GREEN, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 80, "微雪电子", &Font24CN, EPD_5IN65F_BLUE, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 120, "微雪电子", &Font24CN, EPD_5IN65F_RED, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 160, "微雪电子", &Font24CN, EPD_5IN65F_YELLOW, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 200, "微雪电子", &Font24CN, EPD_5IN65F_ORANGE, EPD_5IN65F_BLACK);
-    Paint_DrawString_CN(150, 240, "微雪电子", &Font24CN, EPD_5IN65F_BLACK, EPD_5IN65F_YELLOW);
+    // Paint_DrawPoint(10, 80, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DOT_STYLE_DFT);
+    // Paint_DrawPoint(10, 90, EPD_5IN65F_BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+    // Paint_DrawPoint(10, 100, EPD_5IN65F_BLACK, DOT_PIXEL_3X3, DOT_STYLE_DFT);
+    // Paint_DrawLine(20, 70, 70, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+    // Paint_DrawLine(70, 70, 20, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+    // Paint_DrawRectangle(20, 70, 70, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    // Paint_DrawRectangle(80, 70, 130, 120, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    // Paint_DrawCircle(45, 95, 20, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    // Paint_DrawCircle(105, 95, 20, EPD_5IN65F_WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    // Paint_DrawLine(85, 95, 125, 95, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED);
+    // Paint_DrawLine(105, 75, 105, 115, EPD_5IN65F_BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED);
+
+    Paint_DrawString_EN(10, 0, " !\"%&'()*+,-.", &Font32, EPD_5IN65F_BLACK, EPD_5IN65F_WHITE);
+    Paint_DrawString_EN(10, 32, "hello world!", &Font32, EPD_5IN65F_WHITE, EPD_5IN65F_BLACK);
+    Paint_DrawNum(10, 100, 123456789, &Font32, EPD_5IN65F_BLACK, EPD_5IN65F_WHITE);
+    Paint_DrawNum(10, 150, 987654321, &Font32, EPD_5IN65F_WHITE, EPD_5IN65F_BLACK);
 
     EPD_5IN65F_Display(BlackImage);
     DEV_Delay_ms(4000); 
 #endif
-    printf("e-Paper Clear...\r\n");
-    EPD_5IN65F_Clear(EPD_5IN65F_WHITE);
-    EPD_5IN65F_Clear(EPD_5IN65F_WHITE);
-    DEV_Delay_ms(1000); 
+    // printf("e-Paper Clear...\r\n");
+    // EPD_5IN65F_Clear(EPD_5IN65F_WHITE);
+    // EPD_5IN65F_Clear(EPD_5IN65F_WHITE);
+    // DEV_Delay_ms(1000); 
 	
 	printf("e-Paper Sleep...\r\n");
     EPD_5IN65F_Sleep();
