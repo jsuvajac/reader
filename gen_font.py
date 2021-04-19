@@ -67,6 +67,9 @@ def gen_char_array(img, data, threshold=0x60):
             while len(arr[i]) < BYTES_PER_LINE:
                 arr[i].append(0)
 
+    # drop the last byte -- this is mostly empty
+    for i in range(len(arr)):
+        arr[i].pop()
 
     return arr
 
@@ -138,7 +141,7 @@ def generate_font_arr(img, meta_data, font_name, threshold):
     print(
         f"sFONT Font32 = {{\n"
         f"\t{font_name}_Table,\n"
-        f"\t{3*8+2}, // width\n"
+        f"\t{3*8}, // width\n"
         f"\t{HEIGHT}, // height\n"
         "};"
     )
