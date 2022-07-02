@@ -45,8 +45,6 @@ def gen_char_array(img, data, threshold=0x60):
     # process each line
     for i in range(y, y + height):
         line = []
-        for iii in range(x_advance):
-            line.append(0)
         for ii in range(x, x + width):
             if img[i][ii] <= threshold:
                 line.append(0)
@@ -60,45 +58,27 @@ def gen_char_array(img, data, threshold=0x60):
         for _ in range(width):
             line.append(0)
         arr.append(line_to_bytes(line))
-    # start
-    if is_first_col_zero(arr, 0):
-        for i in range(len(arr)):
-            arr[i].remove(0)
-            while len(arr[i]) < BYTES_PER_LINE:
-                arr[i].append(0)
-
-    # drop the last byte -- this is mostly empty
-    for i in range(len(arr)):
-        arr[i].pop()
 
     return arr
 
 def line_to_bytes(line):
     ''' converts an bin array to a byte array '''
-    byte_arr = []
-    byte_str = ""
-    for i in range(len(line)):
-        byte_str += str(line[i])
-        if i % 8 == 7:
-            byte_arr.append(int(byte_str, 2))
-            byte_str = ""
-        elif i == len(line)-1:
-            byte_arr.append(int(byte_str, 2))
 
-    while len(byte_arr) > BYTES_PER_LINE:
-        byte_arr.remove(0)
+    # enforce 24 bit length
+    while len(line) > 24:
+        line.remove(0)
 
-    while len(byte_arr) < BYTES_PER_LINE:
-        byte_arr.append(0)
+    while len(line) < 24:
+        line.append(0)
 
-    return byte_arr
+    # group by byte sized bit vectors
+    line = [line[i: i + 8] for i in range(0, len(line), 8)]
+
+    # squash bit vectors into bytes
+    line = [int("".join(str(x) for x in byte), 2) for byte in line]
+
+    return line
     
-def is_first_col_zero(byte_arr, col):
-    for row in byte_arr:
-        if row[col] != 0:
-            return False
-    return True
-
 def load_font(font_name):
     ''' read font png and metadata -> 2d pixel array, metatadta dict '''
 
@@ -124,10 +104,9 @@ def generate_font_arr(img, meta_data, font_name, threshold):
     print(f"const uint8_t {font_name}_Table [] = {{")
 
     # print each character
-    for char_data in meta_data['symbols']:
+    for index, char_data in enumerate(meta_data['symbols'][2:]):
         # pprint(char_data)
-        print(f"// {chr(char_data['id'])} ({char_data['id']})")
-        print_char(img, char_data, threshold=threshold)
+        print(f"\t// {chr(char_data['id'])} ({char_data['id']}) {index}")
 
         # print char array data
         char_arr = gen_char_array(img, char_data, threshold=threshold)
