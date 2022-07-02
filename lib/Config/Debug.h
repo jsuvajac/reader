@@ -38,9 +38,11 @@
 #include <stdio.h>
 
 #if DEBUG
-	#define Debug(__info,...) printf("Debug: " __info,##__VA_ARGS__)
+	#define Debug(fmt,...) printf("%s[%d]:"fmt,__FILE__,__LINE__,##__VA_ARGS__)
+	// #define Debug(fmt,...) 
 #else
-	#define Debug(__info,...)  
+	#define Debug(fmt,...) printf(fmt,##__VA_ARGS__)
+	// #define Debug(fmt,...) 
 #endif
 
 #endif

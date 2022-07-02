@@ -8,15 +8,10 @@
 *   Achieve display characters: Display a single character, string, number
 *   Achieve time display: adaptive size display time minutes and seconds
 *----------------
-* |	This version:   V3.1
-* | Date        :   2019-10-10
+* |	This version:   V3.0
+* | Date        :   2019-04-18
 * | Info        :
 * -----------------------------------------------------------------------------
-* V3.1(2019-10-10):
-* 1. Add gray level
-*   PAINT Add Scale
-* 2. Add void Paint_SetScale(UBYTE scale);
-* 
 * V3.0(2019-04-18):
 * 1.Change: 
 *    Paint_DrawPoint(..., DOT_STYLE DOT_STYLE)
@@ -70,7 +65,7 @@
 #ifndef __GUI_PAINT_H
 #define __GUI_PAINT_H
 
-#include "DEV_Config.h"
+#include "../Config/DEV_Config.h"
 #include "../Fonts/fonts.h"
 
 /**
@@ -87,7 +82,8 @@ typedef struct {
     UWORD Mirror;
     UWORD WidthByte;
     UWORD HeightByte;
-    UWORD Scale;
+    UWORD BitsPerPixel;
+    UWORD GrayScale;
 } PAINT;
 extern PAINT Paint;
 
@@ -115,17 +111,32 @@ typedef enum {
 **/
 #define WHITE          0xFF
 #define BLACK          0x00
-#define RED            BLACK
 
 #define IMAGE_BACKGROUND    WHITE
 #define FONT_FOREGROUND     BLACK
 #define FONT_BACKGROUND     WHITE
 
-//4 Gray level
-#define  GRAY1 0x03 //Blackest
-#define  GRAY2 0x02
-#define  GRAY3 0x01 //gray
-#define  GRAY4 0x00 //white
+/*
+For color definition of all BitsPerPixel, you can refer to this:
+
+8bpp:  0x00-0xF0, as for 8bp will automatically reduce to 4bp, the detail value of 8bp is:
+0x00 0x10 0x20 0x30 0x40 0x50 0x60 0x70 0x80 0x90 0xA0 0xB0 0xC0 0xE0 0xF0 16 grayscale in total
+which only occupy upper 4 bits of a byte
+
+4bpp:  0x00-0xF0
+0x00 0x10 0x20 0x30 0x40 0x50 0x60 0x70 0x80 0x90 0xA0 0xB0 0xC0 0xE0 0xF0 16 grayscale in total
+which only occupy upper 4 bits of a byte
+
+2bpp:  0x00-0xC0
+0x00 0x40 0x80 0xC0 4 grayscale in total
+which only occupy upper 2 bits of a byte
+
+1bpp:  0x00-0x80
+0x00 0x80 2 grayscale in total
+which only occupy upper 1 bits of a byte
+*/
+
+
 /**
  * The size of the point
 **/
@@ -184,8 +195,8 @@ void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD
 void Paint_SelectImage(UBYTE *image);
 void Paint_SetRotate(UWORD Rotate);
 void Paint_SetMirroring(UBYTE mirror);
+void Paint_SetBitsPerPixel(UBYTE bpp);
 void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color);
-void Paint_SetScale(UBYTE scale);
 
 void Paint_Clear(UWORD Color);
 void Paint_ClearWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color);
@@ -203,10 +214,8 @@ void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart, const char * pString, cFONT
 void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
 void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
 
-//pic
-void Paint_DrawBitMap(const unsigned char* image_buffer);
-
-
+void Paint_SetColor(UWORD x, UWORD y, UWORD color);
+void Paint_GetColor(UWORD color, UBYTE* arr_color);
 #endif
 
 
