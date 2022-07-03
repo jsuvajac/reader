@@ -84,7 +84,7 @@ int getkey() {
     character = prev;
 
     /* restore the original terminal attributes */
-    // tcsetattr(fileno(stdin), TCSAFLUSH, &orig_term_attr);
+    tcsetattr(fileno(stdin), TCSAFLUSH, &orig_term_attr);
 
     return character;
 }
@@ -160,9 +160,9 @@ int main(int argc, char *argv[]) {
         (Panel_Width * BitsPerPixel / 8 ):
         (Panel_Width * BitsPerPixel / 8 + 1)) * Panel_Height;
 
-    uint8_t *buffer = NULL;
+    uint8_t *image_buffer = NULL;
 
-    if((buffer = (uint8_t *)malloc(image_size)) == NULL) {
+    if((image_buffer = (uint8_t *)malloc(image_size)) == NULL) {
         Debug("Failed to apply for image memory...\r\n");
         return -1;
     }
@@ -171,15 +171,21 @@ int main(int argc, char *argv[]) {
 
     uint16_t width = Dev_Info.Panel_W;
     uint16_t height = Dev_Info.Panel_H;
-    int tile_size = 50;
-    int grid_size = 26;
+
+    // grid
+    int tile_size = 100;
+    int grid_size = 10;//26;
     int start_offset_x = 1;
     int start_offset_y = 2;
 
-    int x = 0;
-    int y = 0;
+    // snake
+    int x = 5;
+    int y = 5;
     int prev_x = x;
     int prev_y = y;
+
+    int dx = 1;
+    int dy = 0;
 
 
     int is_running = true;
@@ -191,60 +197,80 @@ int main(int argc, char *argv[]) {
     printf("starting snake\n");
 
     // setup new image
-    Paint_NewImage(buffer, width, height, 0, 0);
-    Paint_SelectImage(buffer);
-
+    Paint_NewImage(image_buffer, width, height, 0, 0);
+    Paint_SelectImage(image_buffer);
     Paint_SetRotate(0);
     Paint_SetMirroring(MIRROR_NONE);
-
     Paint_SetBitsPerPixel(BitsPerPixel);
     Paint_Clear(0xFF);
 
-
     // draw grid
     printf("draw grid\n");
+    int grid_dot_count = grid_size + 1;
 
-    Paint_DrawRectangle(25 * start_offset_x, 25 * start_offset_y, tile_size * grid_size + 25, tile_size * grid_size + 25, 0x00, 3, DRAW_FILL_EMPTY);
+    Paint_DrawRectangle(
+        tile_size/2,
+        tile_size/2 + tile_size,
+        tile_size * grid_dot_count + tile_size/2,
+        tile_size * grid_dot_count + tile_size/2 + tile_size,
+        0x00, 3, DRAW_FILL_EMPTY
+    );
 
-    for (int i = 0; i < grid_size; ++i) {
-        for (int ii = 0; ii < grid_size; ++ii) {
-            // Paint_DrawLine(x * tile_size, y * tile_size, i * tile_size, ii * tile_size, 0x10, DOT_PIXEL_3X3, LINE_STYLE_SOLID);
-
+    for (int i = 0; i < grid_dot_count; ++i) {
+        for (int ii = 0; ii < grid_dot_count; ++ii) {
             Paint_DrawPoint(
                 start_offset_x * tile_size + ii * tile_size,
                 start_offset_y * tile_size + i  * tile_size,
-                0x1, DOT_PIXEL_3X3, DOT_STYLE_DFT);
+                0x1, DOT_PIXEL_3X3, DOT_STYLE_DFT
+            );
         }
     }
 
-    // debug log
-    Paint_DrawString_EN(
-        (grid_size + 2) * tile_size, 100,
-        "Started", &Font24, 0x30, 0xD0);
-    Paint_DrawString_EN(
-        (grid_size + 2) * tile_size, 120,
-        "1234567890abcdefghijklmnopqrstuvwxyz"
-        , &Font32, 0x00, 0xFF);
+    // char nums[] = "0123456789ABCDEF";
+    // char chosen_x[] = "0";
+    // char chosen_y[] = "0";
 
-    // printf("draw point\n");
-    // draw_point(
-    //     x * 100 + 50,
-    //     y * 100 + 50,
-    //     30, 0x1);
-    // if (prev_x != x || prev_y != y) {
-    //     draw_point(
-    //         x * 100 + 50,
-    //         y * 100 + 50,
-    //         65, 0x8);
+    // for (int i = 0; i < grid_size; ++i) {
+    //     for (int ii = 0; ii < grid_size; ++ii) {
+    //         chosen_x[0] = nums[i];
+    //         chosen_y[0] = nums[ii];
+    //         Paint_DrawString_EN(
+    //             start_offset_x * tile_size + i  * tile_size + tile_size/2 - 7,
+    //             start_offset_y * tile_size + ii * tile_size + tile_size/2,
+    //             chosen_x, &Font24, 0x00, 0xFF
+    //         );
+    //         Paint_DrawString_EN(
+    //             start_offset_x * tile_size + i  * tile_size + tile_size/2,
+    //             start_offset_y * tile_size + ii * tile_size + tile_size/2,
+    //             ",", &Font24, 0x00, 0xFF
+    //         );
+    //         Paint_DrawString_EN(
+    //             start_offset_x * tile_size + i  * tile_size + tile_size/2 + 7,
+    //             start_offset_y * tile_size + ii * tile_size + tile_size/2,
+    //             chosen_y, &Font24, 0x00, 0xFF
+    //         );
+
+    //     }
     // }
 
+    // debug log
+    Paint_DrawString_EN(
+        (grid_dot_count + 2) * tile_size, 100,
+        "Started", &Font24, 0x30, 0xD0
+    );
+    // Paint_DrawString_EN(
+    //     (grid_dot_count + 2) * tile_size, 120,
+    //     "1234567890abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    //     &Font32, 0x00, 0xFF
+    // );
+
     printf("\nrefresh\n"); // slow
-    refresh(BitsPerPixel, buffer, width, height, Init_Target_Memory_Addr);
+    refresh(BitsPerPixel, image_buffer, width, height, Init_Target_Memory_Addr);
     printf("done\n");
 
     while(is_running) {
-        Paint_NewImage(buffer, tile_size, tile_size, 0, 0);
-        Paint_SelectImage(buffer);
+        Paint_NewImage(image_buffer, tile_size, tile_size, 0, 0);
+        Paint_SelectImage(image_buffer);
         Paint_SetBitsPerPixel(BitsPerPixel);
 
         printf("(%d, %d) <- (%d, %d)\n", x, y, prev_x, prev_y);
@@ -259,7 +285,7 @@ int main(int argc, char *argv[]) {
             Paint_DrawPoint(s, 0, 0, 3, DOT_STYLE_DFT);
             Paint_DrawPoint(s, s, 0, 3, DOT_STYLE_DFT);
 
-            EPD_IT8951_8bp_Refresh(buffer, (prev_x + 1)* tile_size, (prev_y + 1)* tile_size, tile_size,  tile_size, false, Init_Target_Memory_Addr);
+            EPD_IT8951_8bp_Refresh(image_buffer, (prev_x + start_offset_x)* tile_size, (prev_y + start_offset_y)* tile_size, tile_size,  tile_size, false, Init_Target_Memory_Addr);
         }
 
         // draw new tile
@@ -273,26 +299,55 @@ int main(int argc, char *argv[]) {
 
         // Paint_Clear(WHITE);
         printf("refresh\n");
-        EPD_IT8951_8bp_Refresh(buffer, (x + 1) * tile_size, (y + 1) * tile_size, tile_size,  tile_size, false, Init_Target_Memory_Addr);
+        EPD_IT8951_8bp_Refresh(image_buffer, (x + start_offset_x) * tile_size, (y + start_offset_y) * tile_size, tile_size,  tile_size, false, Init_Target_Memory_Addr);
         printf("done\n");
 
         prev_x = x;
         prev_y = y;
-    
-        // printf("key\n");
+        // printf("dy, dx: %d %d\n", dy, dx);
+
+        // update position and detect out of bounds
+        if (!(x + dx >= grid_size || x + dx < 0)) x += dx;
+        if (!(y + dy >= grid_size || y + dy < 0)) y += dy;
+
+        int not_found = 0;
         while(true) {
             int key = getkey();
             if(key != -1) {
-                printf("--- %d %c\n", key, (char)key);
+                // printf("--- %d %c\n", key, (char)key);
+                // change direction
+                if ((char)key == 'h' || (char)key == 'a'){
+                    if (dy != 0) {
+                        dy = 0;
+                        dx = -1;
+                    }
+                }
+                if ((char)key == 'l' || (char)key == 'd'){
+                    if (dy != 0) {
+                        dy = 0;
+                        dx = 1;
+                    }
+                }
+                if ((char)key == 'j' || (char)key == 's'){
+                    if (dx != 0) {
+                        dx = 0;
+                        dy = 1;
+                    }
+                }
+                if ((char)key == 'k' || (char)key == 'w'){
+                    if (dx != 0) {
+                        dx = 0;
+                        dy = -1;
+                    }
+                }
 
-                if ((char)key == 'h' || (char)key == 'a') x -= 1;
-                if ((char)key == 'l' || (char)key == 'd') x += 1;
-                if ((char)key == 'j' || (char)key == 's') y += 1;
-                if ((char)key == 'k' || (char)key == 'w') y -= 1;
 
                 if (key == 27) is_running = false;
                 break;
             }
+            else not_found++;
+
+            if (not_found > 10000) break;
         }
         if (is_running == false) break;
 
@@ -301,12 +356,13 @@ int main(int argc, char *argv[]) {
 
 
     printf("cleanup\n");
-    tcsetattr(fileno(stdin), TCSANOW, &start_term_attr);
 
-    if(buffer != NULL){
-        free(buffer);
-        buffer = NULL;
+    if(image_buffer != NULL){
+        free(image_buffer);
+        image_buffer = NULL;
     }
+
+    tcsetattr(fileno(stdin), TCSANOW, &start_term_attr);
 
     //We recommended refresh the panel to white color before storing in the warehouse.
     EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, INIT_Mode);
