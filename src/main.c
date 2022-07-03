@@ -118,57 +118,7 @@ void draw_point(uint16_t x, uint16_t y, uint16_t size, uint16_t color) {
     }
 }
 
-int main(int argc, char *argv[]) {
-    struct termios orig_term_attr;
-
-    /* set the terminal to raw mode */
-    tcgetattr(fileno(stdin), &orig_term_attr);
-    memcpy(&start_term_attr, &orig_term_attr, sizeof(struct termios));
-
-    //Exception handling:ctrl + c
-    signal(SIGINT, Handler);
-
-    //Init the BCM2835 Device
-    if(DEV_Module_Init()!=0){
-        return -1;
-    }
-
-    // get dimensions
-    Dev_Info = EPD_IT8951_Init(VCOM);
-    // 1872 x 1404;
-    Panel_Width = Dev_Info.Panel_W;
-    Panel_Height = Dev_Info.Panel_H;
-
-
-    uint8_t BitsPerPixel = BitsPerPixel_8;
-
-    Init_Target_Memory_Addr = Dev_Info.Memory_Addr_L | (Dev_Info.Memory_Addr_H << 16);
-    // char* LUT_Version = (char*)Dev_Info.LUT_Version;
-    //7.8inch e-Paper HAT(1872,1404)
-    A2_Mode = 6;
-
-	EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, INIT_Mode);
-
-    // examples
-#if 0
-    run_all_examples(Dev_Info, Init_Target_Memory_Addr);
-#endif
-
-
-    // allocate buffer
-    uint32_t image_size  = ((Panel_Width * BitsPerPixel % 8 == 0)?
-        (Panel_Width * BitsPerPixel / 8 ):
-        (Panel_Width * BitsPerPixel / 8 + 1)) * Panel_Height;
-
-    uint8_t *image_buffer = NULL;
-
-    if((image_buffer = (uint8_t *)malloc(image_size)) == NULL) {
-        Debug("Failed to apply for image memory...\r\n");
-        return -1;
-    }
-
-
-
+void snake(uint8_t *image_buffer, uint8_t BitsPerPixel) {
     uint16_t width = Dev_Info.Panel_W;
     uint16_t height = Dev_Info.Panel_H;
 
@@ -186,6 +136,11 @@ int main(int argc, char *argv[]) {
 
     int dx = 1;
     int dy = 0;
+
+    int snake[100][2] = {{0}};
+    snake[0][0] = x;
+    snake[0][1] = y;
+    int snake_length = 1;
 
 
     int is_running = true;
@@ -310,6 +265,7 @@ int main(int argc, char *argv[]) {
         if (!(x + dx >= grid_size || x + dx < 0)) x += dx;
         if (!(y + dy >= grid_size || y + dy < 0)) y += dy;
 
+        printf("keys\n");
         int not_found = 0;
         while(true) {
             int key = getkey();
@@ -349,14 +305,66 @@ int main(int argc, char *argv[]) {
 
             if (not_found > 10000) break;
         }
-        if (is_running == false) break;
+        break;
 
-        // printf("\n");
+        if (is_running == false) break;
+    }
+}
+
+int main(int argc, char *argv[]) {
+    struct termios orig_term_attr;
+
+    /* set the terminal to raw mode */
+    tcgetattr(fileno(stdin), &orig_term_attr);
+    memcpy(&start_term_attr, &orig_term_attr, sizeof(struct termios));
+
+    //Exception handling:ctrl + c
+    signal(SIGINT, Handler);
+
+    //Init the BCM2835 Device
+    if(DEV_Module_Init()!=0){
+        return -1;
+    }
+
+    // get dimensions
+    Dev_Info = EPD_IT8951_Init(VCOM);
+    // 1872 x 1404;
+    Panel_Width = Dev_Info.Panel_W;
+    Panel_Height = Dev_Info.Panel_H;
+
+
+    uint8_t BitsPerPixel = BitsPerPixel_8;
+
+    Init_Target_Memory_Addr = Dev_Info.Memory_Addr_L | (Dev_Info.Memory_Addr_H << 16);
+    // char* LUT_Version = (char*)Dev_Info.LUT_Version;
+    //7.8inch e-Paper HAT(1872,1404)
+    A2_Mode = 6;
+
+	EPD_IT8951_Clear_Refresh(Dev_Info, Init_Target_Memory_Addr, INIT_Mode);
+
+    // examples
+#if 0
+    run_all_examples(Dev_Info, Init_Target_Memory_Addr);
+#endif
+
+
+    // allocate buffer
+    uint32_t image_size  = ((Panel_Width * BitsPerPixel % 8 == 0)?
+        (Panel_Width * BitsPerPixel / 8 ):
+        (Panel_Width * BitsPerPixel / 8 + 1)) * Panel_Height;
+
+    uint8_t *image_buffer = NULL;
+
+    if((image_buffer = (uint8_t *)malloc(image_size)) == NULL) {
+        Debug("Failed to apply for image memory...\r\n");
+        return -1;
     }
 
 
-    printf("cleanup\n");
+    snake(image_buffer, BitsPerPixel);
 
+
+    printf("cleanup\n");
     if(image_buffer != NULL){
         free(image_buffer);
         image_buffer = NULL;
