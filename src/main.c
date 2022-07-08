@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
     Panel_Height = Dev_Info.Panel_H;
 
 
-    uint8_t BitsPerPixel = BitsPerPixel_8;
+    uint8_t BitsPerPixel = BitsPerPixel_1;
 
     Init_Target_Memory_Addr = Dev_Info.Memory_Addr_L | (Dev_Info.Memory_Addr_H << 16);
     // char* LUT_Version = (char*)Dev_Info.LUT_Version;
@@ -365,95 +365,127 @@ int main(int argc, char *argv[]) {
     
     // snake(image_buffer, BitsPerPixel);
 
-
     // lsystem setup
     int line_length = 0;
-    double *lines = create_lsystem(5, &line_length);
+    Lsystem lsystems[] = {
+        { // hexperiment
+            {'+', '-', '[', ']'},
+            "F",
+            {{'F', "F++F++F++F++F++F-F"}},
+            M_PI / 6,
+        },
+        { // pretty tree
+            {'+', '-', '[', ']'},
+            "X",
+            { {'X', "F+[[X]-X]-F[-FX]+X"}, {'F', "FF"}},
+            M_PI / 4,
+        },
+        { // conifer
+            {'+', '-', '[', ']', 'F'},
+            "Y",
+            {{'X', "X[-FFF][+FFF]FX"}, {'Y', "YFX[+Y][-Y]"}},
+            25.7 *M_PI/180,
+        },
+        { // prong bush
+            {'+', '-', '[', ']'},
+            "F",
+            {{'F', "FF+[+F-F-F]-[-F+F+F]"} },
+            22.5*M_PI/180,
+        },
+        { // hilbert
+            {'+', '-', '[', ']', 'F'},
+            "X",
+            {{'X', "-YF+XFX+FY-"}, {'Y', "+XF-YFY-FX+"}},
+            M_PI/2
+        },
+		{ // penrose
+			{'+', '-', '[', ']'},
+			"[X]++[X]++[X]++[X]++[X]",
+			{
+				{'W', "YF++ZF----XF[-YF----WF]++"},
+				{'X', "+YF--ZF[---WF--XF]+"},
+				{'Y', "-WF++XF[+++YF++ZF]-"},
+				{'Z', "--YF++++WF[+ZF++++XF]--XF"},
+				{'F', ""}
+			},
+			36*M_PI/180,
+		},
+		{ // dragon
+			{'+', '-', 'F'},
+			"FX",
+			{{'X', "X+YF+"}, {'Y', "-FX-Y"}},
+			M_PI / 2,
+		},
+		{ // C dragon
+			{'+', '-'},
+			"F",
+			{{'F', "F+F-"}},
+			M_PI / 2,
+		},
+    };
 
-    printf("num points %d\n", line_length/2 - 1);
-   
-    Paint_NewImage(image_buffer, Dev_Info.Panel_W, Dev_Info.Panel_H, 0, 0);
-    Paint_SelectImage(image_buffer);
-    Paint_SetRotate(0);
-    Paint_SetMirroring(MIRROR_NONE);
-    Paint_SetBitsPerPixel(BitsPerPixel);
-    Paint_Clear(0xFF);
+    for (int num_iter = 4; num_iter < 5; ++num_iter) {
+        for (int i = 0; i < 8; ++i) {
+            double *lines = create_lsystem(&lsystems[i], num_iter, &line_length);
 
-    // Paint_DrawString_EN(
-    //     1000, 100,
-    //     "Started", &Font24, 0x30, 0xD0
-    // );
+            printf("\n\nlsystem\n");
+            printf("num points %d\n", line_length/2 - 1);
+            Paint_NewImage(image_buffer, Dev_Info.Panel_W, Dev_Info.Panel_H, 0, 0);
+            Paint_SelectImage(image_buffer);
+            Paint_SetRotate(0);
+            Paint_SetMirroring(MIRROR_NONE);
+            Paint_SetBitsPerPixel(BitsPerPixel_1);
+            Paint_Clear(0x00);
 
-    // Paint_DrawRectangle(
-    //     100, 100, 500, 500,
-    //     0x00, 3, DRAW_FILL_EMPTY
-    // );
-    int x_min = 0;
-    int y_min = 0;
-    int x_max = 0;
-    int y_max = 0;
-    for (int offset = 0; offset < line_length - 2; offset+=2) {
-        if (lines[offset] > x_max)
-            x_max = lines[offset];
-        else if (lines[offset] < x_min)
-            x_min = lines[offset];
+            // get the min to get the x and y offsets
+            int x_min = 0;
+            int y_min = 0;
+            for (int offset = 0; offset < line_length - 2; offset+=2) {
+                if (lines[offset] < x_min) x_min = lines[offset];
+                else if (lines[offset + 1] < y_min) y_min = lines[offset + 1];
+            }
 
-        if (lines[offset + 1] > y_max)
-            y_max = lines[offset + 1];
-        else if (lines[offset + 1] < y_min)
-            y_min = lines[offset + 1];
+            double refresh_period = 25 * ((double)line_length/4.0) / 100.0;
+
+            for (int offset = 0; offset < line_length - 4; offset+=4) {
+                int x_1 = round(lines[offset + 0]);
+                int y_1 = round(lines[offset + 1]);
+                int x_2 = round(lines[offset + 2]);
+                int y_2 = round(lines[offset + 3]);
+
+                int x_offset = x_min > 0 ? 0 : -x_min;
+                int y_offset = y_min > 0 ? 0 : -y_min;
+
+                x_1 = 10 + (x_1 + x_offset) * 2;
+                y_1 = 10 + (y_1 + y_offset) * 2;
+                x_2 = 10 + (x_2 + x_offset) * 2;
+                y_2 = 10 + (y_2 + y_offset) * 2;
+
+                // draw current line
+                if (x_1 > 0 && y_1 > 0 && x_2 < Dev_Info.Panel_W && y_2 < Dev_Info.Panel_H)
+                    Paint_DrawLine(x_1, y_1, x_2, y_2, 0xFF, DOT_PIXEL_3X3, LINE_STYLE_DOTTED);
+
+                // run each animation for a similar amount of time
+                int tick = (int)round(refresh_period);
+                if (tick < 1) tick = 1;
+
+                if ((offset/4) % tick == 0 || offset == line_length - 8) {
+                    printf("%f\n", ((double)offset / (double)line_length) * 100);
+                    refresh(BitsPerPixel_1, image_buffer, Dev_Info.Panel_W, Dev_Info.Panel_H, Init_Target_Memory_Addr);
+                }
+            }
+            if(lines != NULL){
+                free(lines);
+                lines = NULL;
+            }
+        }
     }
-    printf("x [%d %d]\n", x_min, x_max);
-    printf("y [%d %d]\n", y_min, y_max);
 
-    printf("lsystem\n");
-    for (int offset = 0; offset < line_length - 2; offset+=2) {
-        // printf("(%d, %d) -> (%d, %d)\n", 
-        //     (uint16_t)round(lines[offset + 0]),
-        //     (uint16_t)round(lines[offset + 1]),
-        //     (uint16_t)round(lines[offset + 2]),
-        //     (uint16_t)round(lines[offset + 3])
-        // );
-
-        int x_1 = round(lines[offset + 0]);
-        int y_1 = round(lines[offset + 1]);
-        int x_2 = round(lines[offset + 2]);
-        int y_2 = round(lines[offset + 3]);
-
-        int x_offset = x_min > 0 ? 0 : -x_min;
-        int y_offset = y_min > 0 ? 0 : -y_min;
-
-        // Paint_NewImage(image_buffer, tile_size, tile_size, 0, 0);
-        // Paint_SelectImage(image_buffer);
-
-        Paint_DrawLine(
-            10 + (x_1 + x_offset) * 2,
-            10 + (y_1 + y_offset) * 2,
-            10 + (x_2 + x_offset) * 2,
-            10 + (y_2 + y_offset) * 2,
-            0x00, DOT_PIXEL_3X3, LINE_STYLE_DOTTED
-        );
-        // printf("%f %f -> %f %f\n", lines[offset + 0], lines[offset + 1], lines[offset + 2], lines[offset + 3]);
-        // printf("refresh\n");
-
-        // EPD_IT8951_8bp_Refresh(image_buffer,
-        //     (x + start_offset_x) * tile_size,
-        //     (y + start_offset_y) * tile_size,
-        //     tile_size,  tile_size,
-        // false, Init_Target_Memory_Addr);
-
-    }
-
-    refresh(BitsPerPixel, image_buffer, Dev_Info.Panel_W, Dev_Info.Panel_H, Init_Target_Memory_Addr);
     printf("cleanup\n");
 
     if(image_buffer != NULL){
         free(image_buffer);
         image_buffer = NULL;
-    }
-    if(lines != NULL){
-        free(lines);
-        lines = NULL;
     }
 
     tcsetattr(fileno(stdin), TCSANOW, &start_term_attr);

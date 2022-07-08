@@ -1,26 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <math.h>
-
-#define BUFFER_SIZE 1024 * 1024
-#define FIELD_SIZE 0xFF
-
-typedef struct rule {
-    char in;
-    char out[FIELD_SIZE];
-} Rule;
-
-
-typedef struct lsystem {
-    char constants[FIELD_SIZE];
-    char axiom[FIELD_SIZE];
-    Rule rules[FIELD_SIZE];
-    double angle;
-} Lsystem;
-
-
+#include "lsystem.h"
 
 char *lookup_rule(Lsystem *grammar, char in) {
     for (size_t i = 0; grammar->rules[i].in != (char)0; ++i) {
@@ -30,6 +8,7 @@ char *lookup_rule(Lsystem *grammar, char in) {
     }
     return "";
 }
+
 int contains_constant(Lsystem *grammar, char possible_constant) {
     for (int i = 0; i < FIELD_SIZE; ++i) {
         if (grammar->constants[i] == possible_constant) return 1;
@@ -50,7 +29,6 @@ char *generate_lsystem(Lsystem *grammar, size_t num_iter, char *in_buffer, char 
             // printf("\t%ld ---- ", index);
 
             // append rule lookup
-
             if (contains_constant(grammar, in_buffer[index])) {
                 strncat(out_buffer, &in_buffer[index], 1);
             }
@@ -146,25 +124,16 @@ int generate_lines(double *lines, char *instructions, double angle_delta, size_t
     return buffer_size;
 }
 
-double *create_lsystem(size_t num_iter, int *size_ptr) {
-    Lsystem lsystem = {
-        // hilbert
-        {'+', '-', '[', ']', 'F'},
-        "X",
-        {{'X', "-YF+XFX+FY-"}, {'Y', "+XF-YFY-FX+"}},
-        M_PI/2
-    };
-    
-
+double *create_lsystem(Lsystem *lsystem, size_t num_iter, int *size_ptr) {
     char *in_buffer  = calloc(sizeof(char), BUFFER_SIZE);
     char *out_buffer = calloc(sizeof(char), BUFFER_SIZE);
     double *lines = calloc(sizeof(double),  BUFFER_SIZE);
 
 
-    char *instructions = generate_lsystem(&lsystem, num_iter, in_buffer, out_buffer, BUFFER_SIZE);
+    char *instructions = generate_lsystem(lsystem, num_iter, in_buffer, out_buffer, BUFFER_SIZE);
     // printf("%s (%ld)\n", instructions, strlen(instructions));
 
-    int line_length = generate_lines(lines, instructions, lsystem.angle, strlen(instructions));
+    int line_length = generate_lines(lines, instructions, lsystem->angle, strlen(instructions));
     *size_ptr = line_length;
 
     // printf("%f, %f -> %f %f\n", x, y, new_x, new_y);
@@ -173,18 +142,3 @@ double *create_lsystem(size_t num_iter, int *size_ptr) {
 
     return lines;
 }
-
-// int main(int argc, char* argv[])
-// {
-//     int line_length = 0;
-//     double *lines = create_lsystem(5, &line_length);
-
-//     // printf("%d\n", line_length);
-//     for (int i = 0; i < line_length - 2; i+=2) {
-//         printf("%f %f -> %f %f\n", lines[i + 0], lines[i + 1], lines[i + 2], lines[i + 3]);
-//     }
-
-//     free(lines);
-
-//     return 0;
-// }
