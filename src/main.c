@@ -1,9 +1,10 @@
 #include "../lib/Config/DEV_Config.h"
-#include "example.h"
-#include "lsystem.h"
+#include "../lib/e-Paper/example.h"
 #include "../lib/GUI/GUI_BMPfile.h"
 #include "../lib/GUI/GUI_Paint.h"
 #include "../lib/Fonts/fonts.h"
+
+#include "lsystem.h"
 
 #include <math.h>
 #include <stdlib.h>     //exit()
