@@ -53,7 +53,34 @@ def extract_info(file_name):
 def extract_page(file_name, page):
     all_text = ""
     pdf = pycpdf.PDF(open(file_name, 'rb').read())
-    print(pdf.pages[page-1].text.translate(pycpdf.unicode_translations))
+    text = pdf.pages[page-1].text.translate(pycpdf.unicode_translations)
+    page_num = str(page)
+
+    print("\n")
+    # page number at end
+    try:
+        int(text[-len(page_num):])
+        print(text[:-len(page_num)])
+    except ValueError:
+        pass
+
+    # page number at start
+    try:
+        int(text[:len(page_num)])
+        print(text[len(page_num):])
+    except ValueError:
+        pass
+
+def print_help(argv):
+    help_text = {
+        "text": "(Print the entire text from pdf)",
+        "alphabet": "(Print all unique characters)",
+        "info": "(Print PDF info)",
+        "page": "[page] or [start page] [pages to print from start] (Print specific page(s) from a start page.)"
+    }
+
+    action_str = "\n    ".join([str(key).ljust(len("alphabet ")) + str(help_text[key]) for key in actions.keys()])
+    sys.stderr.write(f"\n{sys.argv[0]} file.pdf \n    {action_str}\n\n")
 
 
 if __name__ == "__main__":
@@ -67,12 +94,30 @@ if __name__ == "__main__":
         "info": extract_info
     }
 
-    if len(sys.argv) < 3 or len(sys.argv) > 4:
-        action_str = " | ".join([str(key) for key in actions.keys()])
-        sys.stderr.write(f"{sys.argv[0]} file.pdf [ {action_str} ]\n")
+    print(sys.argv)
+
+    # help
+    if len(sys.argv) < 2 or len(sys.argv) > 5:
+        print_help(sys.argv)
         exit(1)
+
+    # text | alphabet | info
+    if len(sys.argv) == 3 and sys.argv[2] in ["text", "alphabet", "info"]:
+        actions[sys.argv[2]](sys.argv[1])
+    elif len(sys.argv) == 3:
+        print_help(sys.argv)
+        exit(1)
+
+    # specific page 
     elif len(sys.argv) == 4 and sys.argv[2] == "page":
         actions[sys.argv[2]](sys.argv[1], int(sys.argv[3]))
-    else:
-        actions[sys.argv[2]](sys.argv[1])
 
+    # n pages from start page 
+    elif len(sys.argv) == 5 and sys.argv[2] == "page":
+        for i in range(int(sys.argv[4])):
+            actions[sys.argv[2]](sys.argv[1], int(sys.argv[3]) + i)
+
+    # help
+    else:
+        print_help(sys.argv)
+        exit(1)

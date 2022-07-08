@@ -1,3 +1,4 @@
 bin/*
 reader
 *.pdf
+*.pdf.txt
