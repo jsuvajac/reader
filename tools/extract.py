@@ -49,6 +49,9 @@ def extract_info(file_name):
     if pdf.info:
         pprint(pdf.info)
 
+def get_num_pages(file_name):
+    pdf = pycpdf.PDF(open(file_name, 'rb').read())
+    print(len(pdf.pages))
 
 def extract_page(file_name, page):
     all_text = ""
@@ -76,7 +79,8 @@ def print_help(argv):
         "text": "(Print the entire text from pdf)",
         "alphabet": "(Print all unique characters)",
         "info": "(Print PDF info)",
-        "page": "[page] or [start page] [pages to print from start] (Print specific page(s) from a start page.)"
+        "page": "[page] or [start page] [pages to print from start] (Print specific page(s) from a start page.)",
+        "page-num": "(Prints total number of pages)"
     }
 
     action_str = "\n    ".join([str(key).ljust(len("alphabet ")) + str(help_text[key]) for key in actions.keys()])
@@ -91,10 +95,11 @@ if __name__ == "__main__":
         "text": extract_text,
         "alphabet": generate_alphabet,
         "page": extract_page,
-        "info": extract_info
+        "info": extract_info,
+        "page-num": get_num_pages
     }
 
-    print(sys.argv)
+    # print(sys.argv)
 
     # help
     if len(sys.argv) < 2 or len(sys.argv) > 5:
@@ -102,7 +107,7 @@ if __name__ == "__main__":
         exit(1)
 
     # text | alphabet | info
-    if len(sys.argv) == 3 and sys.argv[2] in ["text", "alphabet", "info"]:
+    if len(sys.argv) == 3 and sys.argv[2] in ["text", "alphabet", "info", "page-num"]:
         actions[sys.argv[2]](sys.argv[1])
     elif len(sys.argv) == 3:
         print_help(sys.argv)
