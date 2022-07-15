@@ -7,10 +7,10 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#include "../lib/e-Paper/EPD_IT8951.h"
-#include "../lib/GUI/GUI_Paint.h"
-#include "../lib/GUI/GUI_BMPfile.h"
-#include "../lib/Config/Debug.h"
+#include "../e-Paper/EPD_IT8951.h"
+#include "../GUI/GUI_Paint.h"
+#include "../GUI/GUI_BMPfile.h"
+#include "../Config/Debug.h"
 
 UBYTE *Refresh_Frame_Buf = NULL;
 
