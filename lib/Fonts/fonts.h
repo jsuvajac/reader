@@ -88,6 +88,9 @@ extern sFONT Font8;
 
 extern cFONT Font12CN;
 extern cFONT Font24CN;
+
+int get_start_index(uint16_t char_code);
+
 #ifdef __cplusplus
 }
 #endif

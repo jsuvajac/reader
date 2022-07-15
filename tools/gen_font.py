@@ -5,7 +5,7 @@ from pprint import pprint
 import png
 
 HEIGHT = 32
-BYTES_PER_LINE = 4
+
 
 def print_char(img, data, threshold=0x60):
     ''' print width * height at (x, x) from img 2d arr '''
@@ -99,12 +99,11 @@ def load_font(font_name):
     return (img, meta_data)
 
 def generate_font_arr(img, meta_data, font_name, threshold):
-    char_arr = []
     print('#include "fonts.h"\n')
     print(f"const uint8_t {font_name}_Table [] = {{")
 
     # print each character
-    for index, char_data in enumerate(meta_data['symbols'][2:]):
+    for index, char_data in enumerate(meta_data['symbols']):
         # pprint(char_data)
         print(f"\t// {chr(char_data['id'])} ({char_data['id']}) {index}")
 
@@ -117,6 +116,18 @@ def generate_font_arr(img, meta_data, font_name, threshold):
             print()
 
     print("};\n")
+
+    # lookup function
+    print("int get_start_index(uint16_t char_code) {")
+    print("\tswitch(char_code) {")
+
+    for index, char_data in enumerate(meta_data['symbols']):
+        print(f"\t\tcase({char_data['id']}): return {index * HEIGHT}; // {chr(char_data['id'])}")
+
+    print("\t}")
+    print("\treturn -1;")
+    print("}")
+
     print(
         f"sFONT Font32 = {{\n"
         f"\t{font_name}_Table,\n"
